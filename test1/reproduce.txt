@@ -1,0 +1,16 @@
+FEniCS
+------
+
+git clone https://github.com/nate-sime/dolfin_dg.git
+docker run -ti -p 127.0.0.1:8000:8000 -v $(pwd):/root/shared -w /root/shared ghcr.io/scientificcomputing/fenics-gmsh:2023-04-21
+pip install -e dolfin_dg
+pip install psutil
+python3 dg_naca0012_2d.py
+
+Firedrake
+---------
+
+git clone https://github.com/nate-sime/dolfin_dg.git
+docker run -ti -p 127.0.0.1:8000:8000 -v $(pwd):/root/shared -w /root/shared firedrakeproject/firedrake
+pip install -e dolfin_dg
+python3 dg_naca0012_2d.py
