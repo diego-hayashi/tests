@@ -23,6 +23,7 @@ else:
 
 from dolfin_dg import *
 
+import resource
 import psutil
 import time as time_python
 def print_stats(base_time = None):
@@ -33,7 +34,8 @@ def print_stats(base_time = None):
 		elapsed_time = 0.0
 	else:
 		elapsed_time = current_time - base_time
-	print("> Time: %1.2f s | RES: %1.2f GB | SHARED: %1.2f GB | SWAP: %1.2f GB | VIRTUAL: %1.2f GB" %(elapsed_time, mem_info.rss/2**30, mem_info.shared/2**30, mem_info.swap/2**30, mem_info.vms/2**30))
+	peak_mem_usage = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss*2**10 # From kB to B
+	print("> Time: %1.2f s | RES: %1.2f GB | SHARED: %1.2f GB | SWAP: %1.2f GB | VIRTUAL: %1.2f GB | PEAK RES: %1.2f GB " %(elapsed_time, mem_info.rss/2**30, mem_info.shared/2**30, mem_info.swap/2**30, mem_info.vms/2**30, peak_mem_usage/2**30))
 	return current_time
 print()
 initial_time = print_stats()
@@ -52,13 +54,30 @@ else:
 	mesh = Mesh()
 	XDMFFile("naca0012_coarse_mesh.xdmf").read(mesh)
 
+# Mesh refinement
+num_refinements = 3
+def refine_mesh(mesh, num_refinements):
+	if backend_name == 'firedrake':
+		mesh_hierarchy = MeshHierarchy(mesh, refinement_levels = num_refinements)
+		mesh = mesh_hierarchy.meshes[num_refinements]
+		#File("%s_mesh_test.pvd" %(backend_name)).write(mesh)
+	else:
+		for i in range(num_refinements):
+			mesh = refine(mesh)
+		#File("%s_mesh_test.pvd" %(backend_name)) << mesh
+	return mesh
+if backend_name == 'firedrake':
+	pass
+else:
+	mesh = refine_mesh(mesh, num_refinements)
+
 # Polynomial order
 poly_o = 1
 
 # Initial inlet flow conditions
 rho_0 = 1.0
 M_0 = 0.5
-Re_0 = 5e3
+Re_0 = 1e3 # 5e3
 p_0 = 1.0
 gamma = 1.4
 attack = radians(2.0)
@@ -120,6 +139,12 @@ else:
 		bdry_ff[f] = INLET if f.normal().dot(n_in) < 0.0 \
 			else OUTLET
 	ds = Measure('ds', domain=mesh, subdomain_data=bdry_ff)
+
+# Mesh refinement
+if backend_name == 'firedrake':
+	mesh = refine_mesh(mesh, num_refinements)
+else:
+	pass
 
 # The initial guess used in the Newton solver. Here we use the inlet flow.
 rhoE_in_guess = energy_density(p_0, rho_in, u_in, gamma)
@@ -200,4 +225,3 @@ print_stats(initial_time)
 solve(F == 0, u_vec, solver_parameters = solver_parameters)
 print_stats(initial_time)
 print()
-
