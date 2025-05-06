@@ -55,7 +55,7 @@ else:
 	XDMFFile("naca0012_coarse_mesh.xdmf").read(mesh)
 
 # Mesh refinement
-num_refinements = 3
+num_refinements = 5
 def refine_mesh(mesh, num_refinements):
 	if backend_name == 'firedrake':
 		mesh_hierarchy = MeshHierarchy(mesh, refinement_levels = num_refinements)
@@ -77,7 +77,7 @@ poly_o = 1
 # Initial inlet flow conditions
 rho_0 = 1.0
 M_0 = 0.5
-Re_0 = 1e3 # 5e3
+Re_0 = 1e3 # XXX 5e3
 p_0 = 1.0
 gamma = 1.4
 attack = radians(2.0)
@@ -223,5 +223,31 @@ print()
 print("Solve")
 print_stats(initial_time)
 solve(F == 0, u_vec, solver_parameters = solver_parameters)
+print_stats(initial_time)
+print()
+
+total_solves = 3
+for i in range(total_solves):
+
+	print()
+	print("Solve %d/%d" %(i + 1, total_solves))
+	print_stats(initial_time)
+
+	c_ip = 20.0 + (i + 1)*10.
+	ce = CompressibleNavierStokesOperator(mesh, V, bcs, mu=1.0/Re)
+	F = ce.generate_fem_formulation(u_vec, v_vec, c_ip=c_ip)
+
+	solve(F == 0, u_vec, solver_parameters = solver_parameters)
+
+	print_stats(initial_time)
+	print()
+
+print("Enforced garbage collection...")
+import gc
+gc.collect() 
+import ctypes
+def malloc_trim():
+	ctypes.CDLL('libc.so.6').malloc_trim(0)
+malloc_trim()
 print_stats(initial_time)
 print()
