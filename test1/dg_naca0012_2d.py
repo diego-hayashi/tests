@@ -55,7 +55,7 @@ else:
 	XDMFFile("naca0012_coarse_mesh.xdmf").read(mesh)
 
 # Mesh refinement
-num_refinements = 5
+num_refinements = 1 #5
 def refine_mesh(mesh, num_refinements):
 	if backend_name == 'firedrake':
 		mesh_hierarchy = MeshHierarchy(mesh, refinement_levels = num_refinements)
