@@ -2,7 +2,7 @@ FEniCS
 ------
 
 git clone https://github.com/nate-sime/dolfin_dg.git
-docker run -ti -p 127.0.0.1:8000:8000 -v $(pwd):/root/shared -w /root/shared ghcr.io/scientificcomputing/fenics-gmsh:2023-04-21
+docker run -ti -v $(pwd):/root/shared -w /root/shared ghcr.io/scientificcomputing/fenics-gmsh:2023-04-21
 
 inside docker:
     pip install -e dolfin_dg
@@ -14,7 +14,7 @@ Firedrake
 ---------
 
 git clone https://github.com/nate-sime/dolfin_dg.git
-docker run -ti -p 127.0.0.1:8000:8000 -v $(pwd):/root/shared -w /root/shared firedrakeproject/firedrake
+docker run -ti -v $(pwd):/root/shared -w /root/shared firedrakeproject/firedrake
 
 inside docker:
     pip install -e dolfin_dg
