@@ -58,7 +58,7 @@ else:
 	XDMFFile("naca0012_coarse_mesh.xdmf").read(mesh)
 
 # Mesh refinement
-num_refinements = 1 #5
+num_refinements = 3 #5
 def refine_mesh(mesh, num_refinements):
 	if backend_name == 'firedrake':
 		mesh_hierarchy = MeshHierarchy(mesh, refinement_levels = num_refinements)
@@ -194,6 +194,8 @@ if backend_name == 'firedrake':
 		"snes_type": "newtonls",
 		"pc_type": "lu",
 		"pc_factor_mat_solver_type": "mumps",
+        "mat_mumps_icntl_4": 2,
+        "mat_mumps_icntl_2": 1,
 		'snes_max_it' : 200, 
 		'snes_max_funcs' : 2000,
 		'snes_atol' : 1E-10,
@@ -206,6 +208,8 @@ else:
 	PETScOptions.set("snes_linesearch_damping", 1)
 	PETScOptions.set("snes_linesearch_monitor")
 	PETScOptions.set("ksp_type", "preonly")
+	PETScOptions.set("mat_mumps_icntl_4", 2)
+	PETScOptions.set("mat_mumps_icntl_2", 1)
 	solver_parameters = {
 		"nonlinear_solver": "snes",
 		"snes_solver": {
