@@ -42,7 +42,10 @@ initial_time = print_stats()
 print()
 
 if backend_name == 'firedrake':
-	parameters['form_compiler']['quadrature_degree'] = 4
+	parameters["form_compiler"]["quadrature_degree"] = 4
+	dx = dx(degree=4)
+	dS = dS(degree=4)
+	ds = ds(degree=4)
 else:
 	parameters['std_out_all_processes'] = False
 	parameters["ghost_mode"] = "shared_facet"
@@ -152,7 +155,7 @@ gD_guess = as_vector((rho_in, rho_in*u_in[0], rho_in*u_in[1], rhoE_in_guess))
 
 # Problem function space, (rho, rho*u1, rho*u2, rho*E)
 if backend_name == 'firedrake':
-	V = VectorFunctionSpace(mesh, 'DG', poly_o, dim=4, variant = 'equispaced')
+	V = VectorFunctionSpace(mesh, 'DG', poly_o, dim=4, variant = 'equispaced')  # equispaced to be the same as FEniCS
 else:
 	V = VectorFunctionSpace(mesh, 'DG', poly_o, dim=4)
 print("Problem size: %d degrees of freedom" % V.dim())
@@ -178,7 +181,7 @@ bcs = [DGDirichletBC(ds(INLET), inflow),
 # the symbolic Jacobian
 c_ip = 20.0
 ce = CompressibleNavierStokesOperator(mesh, V, bcs, mu=1.0/Re)
-F = ce.generate_fem_formulation(u_vec, v_vec, c_ip=c_ip)
+F = ce.generate_fem_formulation(u_vec, v_vec, dx=dx, dS=dS, c_ip=c_ip)
 
 if backend_name == 'firedrake':
 	solver_parameters = {
